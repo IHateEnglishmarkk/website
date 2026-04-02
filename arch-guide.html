@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArchGuide — Install Arch. Own Your System.</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #0f1217;
+    --bg3: #141820;
+    --border: #1e2530;
+    --accent: #5af78e;
+    --accent2: #57c7ff;
+    --accent3: #ff6ac1;
+    --yellow: #f3f99d;
+    --text: #cdd6f4;
+    --muted: #6c7898;
+    --card: #10141c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* Glow blobs */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .blob-1 { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -200px; }
+  .blob-2 { width: 500px; height: 500px; background: var(--accent2); bottom: -100px; right: -100px; }
+
+  /* Nav */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(10,12,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--text); }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 9px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+  }
+
+  .hero-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    background: rgba(90,247,142,0.08);
+    border: 1px solid rgba(90,247,142,0.25);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+  .hero-title .line-arch { color: var(--accent); display: block; }
+  .hero-title .line-linux { color: var(--text); display: block; }
+
+  .hero-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 52px;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 14px 28px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(90,247,142,0.3); }
+
+  .btn-secondary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent2);
+    background: rgba(87,199,255,0.08);
+    border: 1px solid rgba(87,199,255,0.3);
+    padding: 14px 28px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-secondary:hover { background: rgba(87,199,255,0.15); transform: translateY(-2px); }
+
+  /* Terminal mock */
+  .terminal-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 72px auto 0;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .terminal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    background: #0d1018;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .terminal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-left: auto;
+    margin-right: auto;
+    letter-spacing: 0.05em;
+  }
+
+  .terminal-body {
+    padding: 24px 24px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.9;
+  }
+
+  .t-prompt { color: var(--accent); }
+  .t-cmd { color: var(--text); }
+  .t-comment { color: var(--muted); }
+  .t-output { color: var(--accent2); }
+  .t-warn { color: var(--yellow); }
+  .t-cursor {
+    display: inline-block;
+    width: 9px; height: 15px;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Sections */
+  section {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+    line-height: 1.15;
+  }
+
+  .section-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 600px;
+    margin-bottom: 52px;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0 24px;
+  }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 32px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    transition: background 0.2s;
+  }
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(90,247,142,0.1);
+    border: 1px solid rgba(90,247,142,0.25);
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .step-content h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .step-content p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 18px;
+  }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-top: 12px;
+    position: relative;
+    overflow-x: auto;
+  }
+
+  .code-block pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.80rem;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre;
+  }
+
+  .code-block .comment { color: var(--muted); }
+  .code-block .cmd { color: var(--accent); }
+  .code-block .flag { color: var(--accent2); }
+  .code-block .str { color: var(--yellow); }
+  .code-block .warn-line { color: var(--yellow); }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+  .step-note {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: rgba(243,249,157,0.05);
+    border: 1px solid rgba(243,249,157,0.2);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 16px;
+  }
+  .step-note-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+  .step-note p {
+    font-size: 0.78rem;
+    color: var(--yellow);
+    margin-bottom: 0;
+    line-height: 1.6;
+  }
+
+  /* Dotfiles card */
+  .dotfiles-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dotfiles-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(90,247,142,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .dotfiles-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .dotfiles-card h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+  }
+
+  .dotfiles-card p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 500px;
+    margin: 0 auto 36px;
+  }
+
+  .dotfiles-features {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .dotfiles-feat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .dotfiles-feat .check { color: var(--accent); font-size: 1rem; }
+
+  .dotfiles-url {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 18px;
+    margin-bottom: 28px;
+    word-break: break-all;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-dotfiles {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 16px 36px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-dotfiles:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(90,247,142,0.35); }
+  .btn-dotfiles svg { width: 18px; height: 18px; }
+
+  /* Tips grid */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .tip-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .tip-card:hover { border-color: rgba(90,247,142,0.3); transform: translateY(-2px); }
+
+  .tip-icon { font-size: 1.6rem; margin-bottom: 14px; }
+  .tip-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .tip-card p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* Method chooser */
+  .method-section {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px 60px;
+    text-align: center;
+  }
+
+  .method-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .method-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 28px;
+    text-decoration: none;
+    transition: all 0.25s;
+    text-align: left;
+    display: block;
+  }
+  .method-card:hover { transform: translateY(-3px); }
+  .method-card.manual:hover { border-color: var(--accent2); box-shadow: 0 16px 40px rgba(87,199,255,0.15); }
+  .method-card.guided:hover { border-color: var(--accent); box-shadow: 0 16px 40px rgba(90,247,142,0.15); }
+
+  .method-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 4px 12px;
+    border-radius: 100px;
+    display: inline-block;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .badge-manual { background: rgba(87,199,255,0.12); color: var(--accent2); border: 1px solid rgba(87,199,255,0.3); }
+  .badge-guided { background: rgba(90,247,142,0.12); color: var(--accent); border: 1px solid rgba(90,247,142,0.3); }
+
+  .method-card h3 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .method-card p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.75;
+    margin-bottom: 20px;
+  }
+  .method-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .method-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 9px;
+  }
+  .method-arrow {
+    display: block;
+    font-size: 1.2rem;
+    margin-top: 20px;
+    transition: transform 0.2s;
+  }
+  .method-card:hover .method-arrow { transform: translateX(5px); }
+
+  @media (max-width: 640px) {
+    .method-cards { grid-template-columns: 1fr; }
+  }
+
+  /* archinstall steps */
+  .ai-step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 32px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ai-step:last-child { border-bottom: none; }
+  .ai-step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent2);
+    background: rgba(87,199,255,0.1);
+    border: 1px solid rgba(87,199,255,0.25);
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .ai-step-content h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .ai-step-content p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 18px;
+  }
+
+  /* archinstall menu screenshot style */
+  .ai-menu {
+    background: var(--bg2);
+    border: 1px solid rgba(87,199,255,0.25);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.80rem;
+    line-height: 2;
+  }
+  .ai-menu .ai-header { color: var(--accent2); font-weight: 700; margin-bottom: 4px; }
+  .ai-menu .ai-option { color: var(--text); padding-left: 14px; }
+  .ai-menu .ai-option::before { content: '  '; }
+  .ai-menu .ai-selected { color: var(--accent); }
+  .ai-menu .ai-selected::before { content: '▶ '; }
+  .ai-menu .ai-note { color: var(--muted); font-size: 0.72rem; margin-top: 6px; }
+
+  @media (max-width: 640px) {
+    .ai-step { grid-template-columns: 40px 1fr; gap: 0 18px; }
+  }
+
+  .ai-menu .ai-selected::before { content: '▶ '; }
+  .ai-menu .ai-note { color: var(--muted); font-size: 0.72rem; margin-top: 6px; }
+
+  @media (max-width: 640px) {
+    .ai-step { grid-template-columns: 40px 1fr; gap: 0 18px; }
+  }
+
+  /* ── Shared extras ── */
+  .step-y .step-num {
+    color: var(--yellow);
+    background: rgba(243,249,157,0.08);
+    border-color: rgba(243,249,157,0.25);
+  }
+  .step-h .step-num {
+    color: var(--accent3);
+    background: rgba(255,106,193,0.08);
+    border-color: rgba(255,106,193,0.25);
+  }
+  .code-block.yellow-l { border-left-color: var(--yellow); }
+  .code-block.pink-l   { border-left-color: var(--accent3); }
+  .code-block.blue-l   { border-left-color: var(--accent2); }
+
+  /* Browser cards */
+  .browser-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+  @media (max-width: 640px) { .browser-grid { grid-template-columns: 1fr; } }
+  .browser-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .browser-card:hover { transform: translateY(-2px); }
+  .browser-card.chrome:hover { border-color: rgba(243,249,157,0.35); }
+  .browser-card.brave:hover  { border-color: rgba(255,106,193,0.35); }
+  .browser-logo { font-size: 2.2rem; margin-bottom: 12px; }
+  .browser-card h3 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .browser-card p { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+
+  /* Update boxes */
+  .update-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 12px;
+  }
+  @media (max-width: 640px) { .update-grid { grid-template-columns: 1fr; } }
+  .update-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+  }
+  .update-box h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .update-box p  { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); line-height: 1.8; margin-bottom: 14px; }
+
+  /* Hyprland dep chips */
+  .dep-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0 20px;
+  }
+  .dep-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    color: var(--accent3);
+    background: rgba(255,106,193,0.07);
+    border: 1px solid rgba(255,106,193,0.2);
+    border-radius: 6px;
+    padding: 5px 13px;
+  }
+
+  /* After install category grid */
+  .category-block { margin-bottom: 52px; }
+  .category-block:last-child { margin-bottom: 0; }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .category-icon { font-size: 1.4rem; }
+  .category-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .category-header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    color: var(--muted);
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  .pkg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .pkg-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .pkg-card:hover { transform: translateY(-2px); border-color: rgba(90,247,142,0.25); }
+  .pkg-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .pkg-name .aur-tag {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--yellow);
+    background: rgba(243,249,157,0.08);
+    border: 1px solid rgba(243,249,157,0.2);
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .pkg-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 52px 24px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--muted);
+    line-height: 2;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    nav { padding: 14px 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 20px 60px; }
+    .dotfiles-card { padding: 32px 20px; }
+    .step { grid-template-columns: 40px 1fr; gap: 0 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#"><span>arch</span>guide</a>
+  <ul class="nav-links">
+    <li><a href="#method">Method</a></li>
+    <li><a href="#install">Manual</a></li>
+    <li><a href="#archinstall">archinstall</a></li>
+    <li><a href="#yay">yay</a></li>
+    <li><a href="#browsers">Browsers</a></li>
+    <li><a href="#update">Update</a></li>
+    <li><a href="#hyprland">Hyprland</a></li>
+    <li><a href="#afterinstall">After Install</a></li>
+    <li><a href="#dotfiles">Dotfiles</a></li>
+    <li><a href="#tips">Tips</a></li>
+  </ul>
+  <a class="nav-cta" href="https://github.com/khiwkonlo/School-ditfiles" target="_blank">→ Dotfiles</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">// Free &amp; Open Source — Built for Everyone</div>
+  <h1 class="hero-title">
+    <span class="line-arch">Arch Linux</span>
+    <span class="line-linux">Your Way.</span>
+  </h1>
+  <p class="hero-sub">A beginner-friendly guide to installing Arch Linux from scratch — plus free dotfiles so your system looks great from day one.</p>
+  <div class="hero-buttons">
+    <a href="#install" class="btn-primary">Start Installing →</a>
+    <a href="#dotfiles" class="btn-secondary">Get Free Dotfiles</a>
+  </div>
+
+  <!-- Terminal mock -->
+  <div class="terminal-wrap">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="terminal-title">root@archiso ~ $</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-comment"># Welcome to the Arch Linux installer</span></div>
+        <div><span class="t-prompt">→ </span><span class="t-cmd">lsblk</span></div>
+        <div><span class="t-output">NAME   MAJ:MIN SIZE  TYPE  MOUNTPOINTS</span></div>
+        <div><span class="t-output">sda      8:0   256G  disk</span></div>
+        <div><span class="t-prompt">→ </span><span class="t-cmd">pacstrap /mnt base linux linux-firmware</span></div>
+        <div><span class="t-warn">==> Installing packages into /mnt...</span></div>
+        <div><span class="t-output">✓ base installed successfully</span></div>
+        <div><span class="t-prompt">→ </span><span class="t-cmd">arch-chroot /mnt</span><span class="t-cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- METHOD CHOOSER -->
+<div class="method-section" id="method">
+  <div class="section-label">// pick your path</div>
+  <h2 class="section-title">Choose Your Install Method</h2>
+  <p class="section-desc" style="margin: 0 auto;">There are two ways to install Arch. Pick the one that fits you best — both end up with a real Arch Linux system.</p>
+
+  <div class="method-cards">
+    <a class="method-card manual" href="#install">
+      <span class="method-badge badge-manual">Manual</span>
+      <h3>Manual Install</h3>
+      <p>Do everything yourself, step by step. You learn exactly how Linux boots and how each part fits together. The classic Arch way.</p>
+      <div class="method-tags">
+        <span class="method-tag">Full control</span>
+        <span class="method-tag">Recommended for learning</span>
+        <span class="method-tag">~45 min</span>
+      </div>
+      <span class="method-arrow">→</span>
+    </a>
+    <a class="method-card guided" href="#archinstall">
+      <span class="method-badge badge-guided">Guided</span>
+      <h3>archinstall Script</h3>
+      <p>A menu-driven installer built into the Arch ISO. Answer a few questions and it sets everything up for you automatically.</p>
+      <div class="method-tags">
+        <span class="method-tag">Beginner friendly</span>
+        <span class="method-tag">Still pure Arch</span>
+        <span class="method-tag">~15 min</span>
+      </div>
+      <span class="method-arrow">→</span>
+    </a>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- INSTALL GUIDE -->
+<section id="install">
+  <div class="section-label">// step-by-step</div>
+  <h2 class="section-title">Install Arch Linux</h2>
+  <p class="section-desc">Follow these steps carefully. Each command is explained so you know what it does — not just how to type it.</p>
+
+  <div class="steps">
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Download the ISO &amp; Flash to USB</h3>
+        <p>Go to archlinux.org/download and download the latest ISO. Then flash it to a USB drive using a tool like <strong style="color:var(--accent2)">Balena Etcher</strong> or <strong style="color:var(--accent2)">Ventoy</strong>. Boot from the USB in your BIOS/UEFI settings.</p>
+        <div class="step-note">
+          <span class="step-note-icon">💡</span>
+          <p>Disable Secure Boot in BIOS before booting. You can re-enable it after install if needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Connect to the Internet</h3>
+        <p>If using Wi-Fi, use <code style="color:var(--accent)">iwctl</code> to connect. Ethernet usually works automatically.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Start the iwctl interactive shell</span>
+<span class="cmd">iwctl</span>
+<span class="comment"># Then inside iwctl:</span>
+<span class="flag">device list</span>
+<span class="flag">station wlan0 scan</span>
+<span class="flag">station wlan0 get-networks</span>
+<span class="flag">station wlan0 connect "YourWiFiName"</span>
+<span class="comment"># Exit iwctl and test the connection</span>
+<span class="cmd">ping -c 3 archlinux.org</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Partition Your Disk</h3>
+        <p>Use <code style="color:var(--accent)">cfdisk</code> for a simple menu-based partition tool. For most systems, you need at minimum: an EFI partition and a root partition.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># See your drives</span>
+<span class="cmd">lsblk</span>
+<span class="comment"># Open cfdisk on your target drive (replace sda with yours)</span>
+<span class="cmd">cfdisk /dev/sda</span>
+<span class="comment"># Recommended layout:</span>
+<span class="warn-line"># /dev/sda1  →  512MB  →  EFI System</span>
+<span class="warn-line"># /dev/sda2  →  rest   →  Linux filesystem</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Format &amp; Mount Partitions</h3>
+        <p>Format each partition with the correct filesystem and mount them for installation.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Format EFI partition</span>
+<span class="cmd">mkfs.fat</span> <span class="flag">-F32</span> /dev/sda1
+<span class="comment"># Format root partition</span>
+<span class="cmd">mkfs.ext4</span> /dev/sda2
+<span class="comment"># Mount root</span>
+<span class="cmd">mount</span> /dev/sda2 /mnt
+<span class="comment"># Mount EFI</span>
+<span class="cmd">mkdir -p</span> /mnt/boot/efi
+<span class="cmd">mount</span> /dev/sda1 /mnt/boot/efi</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <h3>Install the Base System</h3>
+        <p>Use <code style="color:var(--accent)">pacstrap</code> to install the essential packages into the mounted partition.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Install base packages + text editor + networking</span>
+<span class="cmd">pacstrap</span> /mnt base linux linux-firmware \
+         base-devel nano networkmanager grub \
+         efibootmgr sudo</pre>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">⏳</span>
+          <p>This will take a few minutes depending on your internet speed. Let it finish.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-content">
+        <h3>Generate Fstab &amp; Enter System</h3>
+        <p>Generate the filesystem table and chroot into your new install to configure it.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Generate fstab</span>
+<span class="cmd">genfstab</span> <span class="flag">-U</span> /mnt >> /mnt/etc/fstab
+<span class="comment"># Enter the new system</span>
+<span class="cmd">arch-chroot</span> /mnt</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="step">
+      <div class="step-num">07</div>
+      <div class="step-content">
+        <h3>Configure the System</h3>
+        <p>Set your timezone, locale, hostname, and root password.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Set timezone (change to your region)</span>
+<span class="cmd">ln -sf</span> /usr/share/zoneinfo/Asia/Bangkok /etc/localtime
+<span class="cmd">hwclock</span> <span class="flag">--systohc</span>
+
+<span class="comment"># Set locale</span>
+<span class="cmd">echo</span> <span class="str">"en_US.UTF-8 UTF-8"</span> >> /etc/locale.gen
+<span class="cmd">locale-gen</span>
+<span class="cmd">echo</span> <span class="str">"LANG=en_US.UTF-8"</span> > /etc/locale.conf
+
+<span class="comment"># Set hostname</span>
+<span class="cmd">echo</span> <span class="str">"myhostname"</span> > /etc/hostname
+
+<span class="comment"># Set root password</span>
+<span class="cmd">passwd</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 8 -->
+    <div class="step">
+      <div class="step-num">08</div>
+      <div class="step-content">
+        <h3>Create a User</h3>
+        <p>Never use root as your daily driver. Create a regular user with sudo access.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Create user (replace "yourname")</span>
+<span class="cmd">useradd</span> <span class="flag">-m -G wheel</span> yourname
+<span class="cmd">passwd</span> yourname
+
+<span class="comment"># Give sudo access to wheel group</span>
+<span class="cmd">EDITOR=nano visudo</span>
+<span class="comment"># Uncomment: %wheel ALL=(ALL:ALL) ALL</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 9 -->
+    <div class="step">
+      <div class="step-num">09</div>
+      <div class="step-content">
+        <h3>Install Bootloader &amp; Enable Services</h3>
+        <p>Install GRUB so your system can boot, then enable networking and exit.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Install GRUB</span>
+<span class="cmd">grub-install</span> <span class="flag">--target=x86_64-efi</span> \
+  <span class="flag">--efi-directory=/boot/efi</span> \
+  <span class="flag">--bootloader-id=GRUB</span>
+<span class="cmd">grub-mkconfig</span> <span class="flag">-o</span> /boot/grub/grub.cfg
+
+<span class="comment"># Enable NetworkManager on boot</span>
+<span class="cmd">systemctl enable</span> NetworkManager
+
+<span class="comment"># Exit, unmount, reboot!</span>
+<span class="cmd">exit</span>
+<span class="cmd">umount -R</span> /mnt
+<span class="cmd">reboot</span></pre>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">🎉</span>
+          <p>Remove the USB drive when the system reboots. You should see the GRUB menu. Arch Linux is installed!</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ARCHINSTALL -->
+<section id="archinstall">
+  <div class="section-label">// guided installer</div>
+  <h2 class="section-title">Install with <span style="color:var(--accent2)">archinstall</span></h2>
+  <p class="section-desc">The <code style="color:var(--accent2)">archinstall</code> script is included in every Arch ISO. It walks you through setup with a simple menu — no memorising commands needed. You still get a real, pure Arch system at the end.</p>
+
+  <div class="steps">
+
+    <div class="ai-step">
+      <div class="ai-step-num">01</div>
+      <div class="ai-step-content">
+        <h3>Boot the Arch ISO</h3>
+        <p>Download and flash the Arch ISO exactly like the manual method (see Step 01 above). Boot from the USB. When you see the live terminal prompt, you are ready.</p>
+        <div class="step-note">
+          <span class="step-note-icon">💡</span>
+          <p>Make sure you are connected to the internet first. For Wi-Fi, use <code style="color:var(--accent)">iwctl</code> to connect before running archinstall.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-step">
+      <div class="ai-step-num">02</div>
+      <div class="ai-step-content">
+        <h3>Run the archinstall Command</h3>
+        <p>The script is already on the ISO. Just type one command and the guided menu opens.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Connect to Wi-Fi first if needed (skip if using ethernet)</span>
+<span class="cmd">iwctl</span>
+<span class="flag">station wlan0 connect "YourWiFiName"</span>
+<span class="comment"># exit iwctl, then launch the installer</span>
+<span class="cmd">archinstall</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-step">
+      <div class="ai-step-num">03</div>
+      <div class="ai-step-content">
+        <h3>Choose Your Language &amp; Locale</h3>
+        <p>The first menu asks for your keyboard layout and locale. Use the arrow keys to navigate, Enter to select. For most users: <strong style="color:var(--text)">en_US</strong>.</p>
+        <div class="ai-menu">
+          <div class="ai-header">Archinstall — Language &amp; Locale</div>
+          <div class="ai-selected">Keyboard layout         → us</div>
+          <div class="ai-option">Locale                  → en_US.UTF-8</div>
+          <div class="ai-option">Mirror region           → Worldwide</div>
+          <div class="ai-note">// Use ↑↓ to move, Enter to select, Esc to go back</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-step">
+      <div class="ai-step-num">04</div>
+      <div class="ai-step-content">
+        <h3>Select Your Drive &amp; Partition Layout</h3>
+        <p>Choose the disk you want to install Arch on. For most users, pick <strong style="color:var(--accent)">Best-effort default partition layout</strong> — it automatically creates the right partitions for you.</p>
+        <div class="ai-menu">
+          <div class="ai-header">Disk configuration</div>
+          <div class="ai-selected">Use a best-effort default partition layout</div>
+          <div class="ai-option">Manual partitioning</div>
+          <div class="ai-option">Pre-mounted configuration</div>
+          <div class="ai-note">// Best-effort creates: EFI + root. Good for most installs.</div>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">⚠️</span>
+          <p>This will erase the selected drive. Make sure you pick the right disk. Run <code style="color:var(--yellow)">lsblk</code> in another terminal to double check.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-step">
+      <div class="ai-step-num">05</div>
+      <div class="ai-step-content">
+        <h3>Set Hostname, Root Password &amp; Create User</h3>
+        <p>Give your machine a name (hostname), set a root password, and create a regular user account. Always create a user — do not use root as your daily account.</p>
+        <div class="ai-menu">
+          <div class="ai-header">System configuration</div>
+          <div class="ai-option">Hostname               → mymachine</div>
+          <div class="ai-selected">Root password          → (set one)</div>
+          <div class="ai-option">User account           → yourname  [wheel]</div>
+          <div class="ai-option">sudo                   → With sudo enabled</div>
+          <div class="ai-note">// Add your user to the "wheel" group to get sudo access</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-step">
+      <div class="ai-step-num">06</div>
+      <div class="ai-step-content">
+        <h3>Choose a Profile &amp; Desktop Environment</h3>
+        <p>This is where archinstall shines over manual install. You can pick a full desktop environment and it installs all the packages for you automatically.</p>
+        <div class="ai-menu">
+          <div class="ai-header">Profile</div>
+          <div class="ai-option">Desktop</div>
+          <div class="ai-selected">  → KDE Plasma  ✓  (full desktop, great for beginners)</div>
+          <div class="ai-option">  → GNOME</div>
+          <div class="ai-option">  → Hyprland  (tiling, wayland, advanced)</div>
+          <div class="ai-option">  → i3  (minimal tiling WM)</div>
+          <div class="ai-option">Minimal  (no desktop, just terminal)</div>
+          <div class="ai-note">// KDE or GNOME recommended if you want a regular desktop</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-step">
+      <div class="ai-step-num">07</div>
+      <div class="ai-step-content">
+        <h3>Pick Audio &amp; Network Manager</h3>
+        <p>Select <strong style="color:var(--accent)">Pipewire</strong> for audio (modern and works great) and <strong style="color:var(--accent)">NetworkManager</strong> so Wi-Fi works after reboot.</p>
+        <div class="ai-menu">
+          <div class="ai-header">Additional packages / services</div>
+          <div class="ai-selected">Audio               → Pipewire</div>
+          <div class="ai-selected">Network             → NetworkManager</div>
+          <div class="ai-option">Timezone            → Asia/Bangkok</div>
+          <div class="ai-note">// Pipewire replaces PulseAudio and works better on modern hardware</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-step">
+      <div class="ai-step-num">08</div>
+      <div class="ai-step-content">
+        <h3>Install &amp; Reboot</h3>
+        <p>Once all options look correct, scroll to <strong style="color:var(--accent)">Install</strong> and press Enter. The script downloads and installs everything. When it finishes, reboot and remove the USB.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># archinstall handles everything. When done, reboot:</span>
+<span class="cmd">reboot</span>
+<span class="comment"># Remove your USB drive when the screen goes black</span>
+<span class="comment"># Your new Arch system will boot with the desktop ready</span></pre>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">🎉</span>
+          <p>Done! Log in with the user you created. Run <code style="color:var(--yellow)">sudo pacman -Syu</code> to update everything right away.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- YAY AUR HELPER -->
+<section id="yay">
+  <div class="section-label">// aur helper</div>
+  <h2 class="section-title">Install <span style="color:var(--yellow)">yay</span> — AUR Helper</h2>
+  <p class="section-desc">The official Arch repos have thousands of packages, but the AUR (Arch User Repository) has tens of thousands more — including Google Chrome, Brave, Spotify, and almost anything else you need. <strong style="color:var(--text)">yay</strong> is the most popular tool for installing AUR packages easily.</p>
+
+  <div class="steps">
+
+    <div class="step step-y">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Install Required Dependencies</h3>
+        <p>yay needs <code style="color:var(--accent)">git</code> and the <code style="color:var(--accent)">base-devel</code> group to build packages. Install them first with pacman.</p>
+        <div class="code-block yellow-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Make sure these are installed</span>
+<span class="cmd">sudo pacman -S</span> <span class="flag">--needed</span> git base-devel</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-y">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Clone &amp; Build yay</h3>
+        <p>Download the yay source from the AUR and build it. This only needs to be done once. After this, yay updates itself.</p>
+        <div class="code-block yellow-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Clone yay from the AUR</span>
+<span class="cmd">git clone</span> https://aur.archlinux.org/yay.git
+<span class="cmd">cd</span> yay
+
+<span class="comment"># Build and install yay</span>
+<span class="cmd">makepkg</span> <span class="flag">-si</span>
+
+<span class="comment"># Type Y and press Enter when asked to install</span></pre>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">⚠️</span>
+          <p>Never run <code style="color:var(--yellow)">makepkg</code> as root or with sudo. It must be run as a regular user.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-y">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Verify yay is Working</h3>
+        <p>After install, test that yay works and check its version.</p>
+        <div class="code-block yellow-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Check yay version</span>
+<span class="cmd">yay</span> <span class="flag">--version</span>
+
+<span class="comment"># Search for any package (test it out)</span>
+<span class="cmd">yay -Ss</span> brave</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-y">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Basic yay Commands</h3>
+        <p>yay works just like pacman but also searches the AUR. Here are the commands you will use most.</p>
+        <div class="code-block yellow-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Install a package (searches both pacman + AUR)</span>
+<span class="cmd">yay -S</span> package-name
+
+<span class="comment"># Search for a package</span>
+<span class="cmd">yay -Ss</span> keyword
+
+<span class="comment"># Update ALL packages including AUR</span>
+<span class="cmd">yay -Syu</span>
+
+<span class="comment"># Remove a package</span>
+<span class="cmd">yay -R</span> package-name
+
+<span class="comment"># Remove a package AND its unused dependencies</span>
+<span class="cmd">yay -Rns</span> package-name</pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- BROWSERS -->
+<section id="browsers">
+  <div class="section-label">// web browsers</div>
+  <h2 class="section-title">Install Browsers with yay</h2>
+  <p class="section-desc">Google Chrome and Brave are not in the official Arch repos — they live in the AUR. With yay installed, adding them is just one command each.</p>
+
+  <div class="browser-grid">
+    <div class="browser-card chrome">
+      <div class="browser-logo">🌐</div>
+      <h3 style="color:var(--yellow)">Google Chrome</h3>
+      <p>The most widely used browser. Fast, compatible with everything, and has the largest extension library. Uses your Google account to sync bookmarks and passwords.</p>
+      <div class="code-block yellow-l">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><span class="comment"># Install Google Chrome (stable)</span>
+<span class="cmd">yay -S</span> google-chrome
+
+<span class="comment"># Or install unstable/beta builds:</span>
+<span class="comment"># yay -S google-chrome-beta</span>
+<span class="comment"># yay -S google-chrome-dev</span></pre>
+      </div>
+    </div>
+    <div class="browser-card brave">
+      <div class="browser-logo">🦁</div>
+      <h3 style="color:var(--accent3)">Brave Browser</h3>
+      <p>Privacy-focused browser based on Chromium. Blocks ads and trackers by default, no setup required. Fast, and compatible with Chrome extensions.</p>
+      <div class="code-block pink-l">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><span class="comment"># Install Brave (stable)</span>
+<span class="cmd">yay -S</span> brave-bin
+
+<span class="comment"># brave-bin = pre-built binary (faster to install)
+# brave = compiled from source (slower)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-note">
+    <span class="step-note-icon">💡</span>
+    <p>During AUR installs, yay will show you the PKGBUILD and ask to review it. Press <code style="color:var(--yellow)">N</code> to skip the review and <code style="color:var(--yellow)">Y</code> to confirm installation. Always say yes to proceed.</p>
+  </div>
+
+  <div style="margin-top:32px;">
+    <p style="font-family:'JetBrains Mono',monospace; font-size:0.82rem; color:var(--muted); margin-bottom:16px;">Want more browsers? Here are a few others popular on Arch:</p>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Firefox (in official repos, no yay needed)</span>
+<span class="cmd">sudo pacman -S</span> firefox
+
+<span class="comment"># Vivaldi (AUR)</span>
+<span class="cmd">yay -S</span> vivaldi
+
+<span class="comment"># Floorp - privacy Firefox fork (AUR)</span>
+<span class="cmd">yay -S</span> floorp-bin</pre>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- UPDATE ARCH -->
+<section id="update">
+  <div class="section-label">// system maintenance</div>
+  <h2 class="section-title">How to Update <span style="color:var(--accent)">Arch Linux</span></h2>
+  <p class="section-desc">Arch is a rolling release — there is no version upgrade process. You just update regularly and your system stays current. Here is everything you need to know.</p>
+
+  <div class="update-grid">
+    <div class="update-box">
+      <h3>🔄 Update Everything (Recommended)</h3>
+      <p>Updates all official packages AND AUR packages in one command. Use this as your regular update routine.</p>
+      <div class="code-block yellow-l">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><span class="comment"># Full system update with yay</span>
+<span class="cmd">yay -Syu</span>
+
+<span class="comment"># Or just pacman (no AUR)</span>
+<span class="cmd">sudo pacman -Syu</span></pre>
+      </div>
+    </div>
+    <div class="update-box">
+      <h3>🧹 Clean Package Cache</h3>
+      <p>Old package versions pile up on disk. Clean the cache regularly to free space. Keep at least 2 old versions in case you need to downgrade.</p>
+      <div class="code-block yellow-l">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><span class="comment"># Remove all but last 3 versions</span>
+<span class="cmd">sudo paccache -r</span>
+
+<span class="comment"># Remove ALL cached packages</span>
+<span class="cmd">sudo pacman -Scc</span></pre>
+      </div>
+    </div>
+    <div class="update-box">
+      <h3>🗑️ Remove Orphan Packages</h3>
+      <p>Orphans are packages that were installed as dependencies but are no longer needed. Safe to remove.</p>
+      <div class="code-block yellow-l">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><span class="comment"># List orphan packages</span>
+<span class="cmd">pacman -Qdt</span>
+
+<span class="comment"># Remove all orphans</span>
+<span class="cmd">sudo pacman -Rns</span> $(pacman -Qdtq)</pre>
+      </div>
+    </div>
+    <div class="update-box">
+      <h3>🔑 Refresh Keyring</h3>
+      <p>If you get GPG keyring errors during updates, refresh the Arch keyring. This fixes most signature errors.</p>
+      <div class="code-block yellow-l">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><span class="comment"># Refresh Arch Linux keyring</span>
+<span class="cmd">sudo pacman -S</span> archlinux-keyring
+<span class="cmd">sudo pacman-key --refresh-keys</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-note" style="margin-top:28px;">
+    <span class="step-note-icon">📅</span>
+    <p>Update at least once a week. Arch moves fast — waiting months between updates can cause dependency conflicts. If something breaks after an update, check the <a href="https://archlinux.org/news/" target="_blank" style="color:var(--accent2)">Arch Linux News page</a> first.</p>
+  </div>
+
+  <div style="margin-top:32px;">
+    <h3 style="font-size:1rem; font-weight:700; margin-bottom:12px; letter-spacing:-0.01em;">🛟 How to Downgrade a Package</h3>
+    <p style="font-family:'JetBrains Mono',monospace; font-size:0.80rem; color:var(--muted); line-height:1.8; margin-bottom:12px;">If an update breaks something, you can go back to an older version.</p>
+    <div class="code-block yellow-l">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Install the downgrade tool</span>
+<span class="cmd">yay -S</span> downgrade
+
+<span class="comment"># Then run it for any package</span>
+<span class="cmd">sudo downgrade</span> package-name
+
+<span class="comment"># Example: downgrade firefox</span>
+<span class="cmd">sudo downgrade</span> firefox</pre>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- HYPRLAND -->
+<section id="hyprland">
+  <div class="section-label">// wayland tiling wm</div>
+  <h2 class="section-title">Install <span style="color:var(--accent3)">Hyprland</span></h2>
+  <p class="section-desc">Hyprland is a dynamic tiling window manager for Wayland. It is highly customisable, smooth, and looks stunning with the right dotfiles. This guide gets you from a bare Arch install to a working Hyprland desktop.</p>
+
+  <div class="steps">
+
+    <div class="step step-h">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Install Hyprland &amp; Core Dependencies</h3>
+        <p>Install Hyprland and the essential packages needed to get a working desktop: a terminal, status bar, application launcher, notification daemon, and authentication agent.</p>
+        <div class="dep-list">
+          <span class="dep-item">hyprland</span>
+          <span class="dep-item">kitty</span>
+          <span class="dep-item">waybar</span>
+          <span class="dep-item">wofi</span>
+          <span class="dep-item">hyprpaper</span>
+          <span class="dep-item">dunst</span>
+          <span class="dep-item">polkit-kde-agent</span>
+          <span class="dep-item">xdg-desktop-portal-hyprland</span>
+        </div>
+        <div class="code-block pink-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Install Hyprland and essential packages</span>
+<span class="cmd">sudo pacman -S</span> hyprland kitty waybar wofi \
+               hyprpaper dunst \
+               polkit-kde-agent \
+               xdg-desktop-portal-hyprland \
+               qt5-wayland qt6-wayland</pre>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">💡</span>
+          <p><strong style="color:var(--text)">kitty</strong> = terminal · <strong style="color:var(--text)">waybar</strong> = status bar · <strong style="color:var(--text)">wofi</strong> = app launcher · <strong style="color:var(--text)">hyprpaper</strong> = wallpaper · <strong style="color:var(--text)">dunst</strong> = notifications</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-h">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Install Audio &amp; Network Stack</h3>
+        <p>Hyprland does not pull in audio or networking automatically. Install Pipewire for sound and NetworkManager for internet.</p>
+        <div class="code-block pink-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Audio (Pipewire)</span>
+<span class="cmd">sudo pacman -S</span> pipewire pipewire-alsa pipewire-pulse \
+               pipewire-jack wireplumber
+
+<span class="comment"># Network</span>
+<span class="cmd">sudo pacman -S</span> networkmanager nm-connection-editor
+<span class="cmd">sudo systemctl enable</span> --now NetworkManager
+
+<span class="comment"># Enable Pipewire on login</span>
+<span class="cmd">systemctl</span> <span class="flag">--user enable</span> --now pipewire pipewire-pulse wireplumber</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-h">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Install a Display Manager (Login Screen)</h3>
+        <p>A display manager shows your login screen and launches Hyprland. <strong style="color:var(--text)">SDDM</strong> is the most commonly used with Hyprland.</p>
+        <div class="code-block pink-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Install SDDM</span>
+<span class="cmd">sudo pacman -S</span> sddm
+
+<span class="comment"># Enable SDDM to start on boot</span>
+<span class="cmd">sudo systemctl enable</span> sddm
+
+<span class="comment"># Optional: install a nice SDDM theme from AUR</span>
+<span class="cmd">yay -S</span> sddm-theme-astronaut</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-h">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Create the Hyprland Config</h3>
+        <p>Hyprland's config file lives at <code style="color:var(--accent3)">~/.config/hypr/hyprland.conf</code>. On first launch it creates a default one. Here is the minimal config to get started:</p>
+        <div class="code-block pink-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Create config folder</span>
+<span class="cmd">mkdir -p</span> ~/.config/hypr
+
+<span class="comment"># Create a basic hyprland.conf</span>
+<span class="cmd">nano</span> ~/.config/hypr/hyprland.conf</pre>
+        </div>
+        <div class="code-block pink-l" style="margin-top:12px;">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Paste this into hyprland.conf as a starting point</span>
+
+<span class="flag">monitor</span>=,preferred,auto,1
+
+<span class="flag">exec-once</span> = hyprpaper
+<span class="flag">exec-once</span> = waybar
+<span class="flag">exec-once</span> = dunst
+<span class="flag">exec-once</span> = /usr/lib/polkit-kde-authentication-agent-1
+
+<span class="flag">$terminal</span> = kitty
+<span class="flag">$menu</span>     = wofi --show drun
+
+<span class="flag">general</span> {
+    gaps_in  = 5
+    gaps_out = 10
+    border_size = 2
+    col.active_border = rgba(ff6ac1ff) rgba(57c7ffff) 45deg
+    col.inactive_border = rgba(1e2530ff)
+    layout = dwindle
+}
+
+<span class="flag">decoration</span> {
+    rounding = 10
+    blur { enabled = true; size = 6; passes = 2 }
+    drop_shadow = true
+    shadow_range = 12
+    shadow_color = rgba(0,0,0,0.5)
+}
+
+<span class="flag">animations</span> {
+    enabled = true
+    bezier = myBezier, 0.05, 0.9, 0.1, 1.05
+    animation = windows, 1, 5, myBezier
+    animation = fade, 1, 5, default
+    animation = workspaces, 1, 4, default
+}
+
+<span class="comment"># Key bindings</span>
+<span class="flag">$mod</span> = SUPER
+
+<span class="flag">bind</span> = $mod, Return,  exec,      $terminal
+<span class="flag">bind</span> = $mod, D,       exec,      $menu
+<span class="flag">bind</span> = $mod, Q,       killactive
+<span class="flag">bind</span> = $mod, F,       fullscreen
+<span class="flag">bind</span> = $mod SHIFT, E, exit
+
+<span class="comment"># Move focus with SUPER + arrow keys</span>
+<span class="flag">bind</span> = $mod, left,  movefocus, l
+<span class="flag">bind</span> = $mod, right, movefocus, r
+<span class="flag">bind</span> = $mod, up,    movefocus, u
+<span class="flag">bind</span> = $mod, down,  movefocus, d
+
+<span class="comment"># Switch workspaces with SUPER + [1-9]</span>
+<span class="flag">bind</span> = $mod, 1, workspace, 1
+<span class="flag">bind</span> = $mod, 2, workspace, 2
+<span class="flag">bind</span> = $mod, 3, workspace, 3
+<span class="flag">bind</span> = $mod, 4, workspace, 4
+<span class="flag">bind</span> = $mod, 5, workspace, 5
+
+<span class="comment"># Move window to workspace with SUPER + SHIFT + [1-9]</span>
+<span class="flag">bind</span> = $mod SHIFT, 1, movetoworkspace, 1
+<span class="flag">bind</span> = $mod SHIFT, 2, movetoworkspace, 2
+<span class="flag">bind</span> = $mod SHIFT, 3, movetoworkspace, 3
+
+<span class="comment"># Mouse: drag windows with SUPER + LMB/RMB</span>
+<span class="flag">bindm</span> = $mod, mouse:272, movewindow
+<span class="flag">bindm</span> = $mod, mouse:273, resizewindow</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-h">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <h3>Set a Wallpaper with hyprpaper</h3>
+        <p>Create the hyprpaper config file to set your wallpaper. Replace the path with the actual path to your image file.</p>
+        <div class="code-block pink-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Create hyprpaper config</span>
+<span class="cmd">nano</span> ~/.config/hypr/hyprpaper.conf</pre>
+        </div>
+        <div class="code-block pink-l" style="margin-top:12px;">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Paste this into hyprpaper.conf</span>
+<span class="comment"># Replace the path with your wallpaper file</span>
+
+<span class="flag">preload</span>  = ~/Pictures/wallpaper.jpg
+<span class="flag">wallpaper</span> = ,~/Pictures/wallpaper.jpg</pre>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">🖼️</span>
+          <p>Place a wallpaper image in <code style="color:var(--accent3)">~/Pictures/</code> first. Supported formats: JPG, PNG, WebP.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-h">
+      <div class="step-num">06</div>
+      <div class="step-content">
+        <h3>Install Useful Extras</h3>
+        <p>These are not required but strongly recommended for a comfortable Hyprland desktop experience.</p>
+        <div class="code-block pink-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="comment"># Screenshot tool</span>
+<span class="cmd">sudo pacman -S</span> grim slurp
+
+<span class="comment"># Clipboard manager</span>
+<span class="cmd">sudo pacman -S</span> wl-clipboard cliphist
+
+<span class="comment"># File manager (GUI)</span>
+<span class="cmd">sudo pacman -S</span> thunar
+
+<span class="comment"># Screen lock</span>
+<span class="cmd">yay -S</span> hyprlock
+
+<span class="comment"># Idle daemon (auto-lock screen)</span>
+<span class="cmd">yay -S</span> hypridle
+
+<span class="comment"># Better app launcher (alternative to wofi)</span>
+<span class="cmd">yay -S</span> rofi-wayland
+
+<span class="comment"># Fonts (Hyprland looks great with Nerd Fonts)</span>
+<span class="cmd">yay -S</span> ttf-jetbrains-mono-nerd noto-fonts-emoji</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step step-h">
+      <div class="step-num">07</div>
+      <div class="step-content">
+        <h3>Reboot &amp; Launch Hyprland</h3>
+        <p>Reboot your system. SDDM will show your login screen — select <strong style="color:var(--accent3)">Hyprland</strong> from the session menu, log in, and your desktop will start.</p>
+        <div class="code-block pink-l">
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          <pre><span class="cmd">reboot</span>
+
+<span class="comment"># After login, your key bindings:</span>
+<span class="comment"># SUPER + Return  →  open terminal (kitty)</span>
+<span class="comment"># SUPER + D       →  open app launcher (wofi)</span>
+<span class="comment"># SUPER + Q       →  close window</span>
+<span class="comment"># SUPER + F       →  fullscreen</span>
+<span class="comment"># SUPER + 1-5     →  switch workspace</span>
+<span class="comment"># SUPER+SHIFT + E →  exit Hyprland</span></pre>
+        </div>
+        <div class="step-note">
+          <span class="step-note-icon">🎉</span>
+          <p>You now have a working Hyprland desktop! Check the <a href="https://wiki.hyprland.org" target="_blank" style="color:var(--accent2)">Hyprland Wiki</a> for advanced configuration — animations, workspaces, window rules, and more.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DOTFILES -->
+<section id="dotfiles">
+  <div class="dotfiles-card">
+    <span class="dotfiles-icon">⚙️</span>
+    <h2>Free Dotfiles — Ready to Use</h2>
+    <p>Pre-configured dotfiles so your Arch system looks clean and works great from the start. Completely free and open source.</p>
+    <div class="dotfiles-features">
+      <div class="dotfiles-feat"><span class="check">✓</span> Shell configs</div>
+      <div class="dotfiles-feat"><span class="check">✓</span> Window manager setup</div>
+      <div class="dotfiles-feat"><span class="check">✓</span> Terminal styling</div>
+      <div class="dotfiles-feat"><span class="check">✓</span> Free forever</div>
+    </div>
+    <div class="dotfiles-url">https://github.com/khiwkonlo/School-ditfiles</div>
+    <br>
+    <a class="btn-dotfiles" href="https://github.com/khiwkonlo/School-ditfiles" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      Download on GitHub
+    </a>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- AFTER INSTALL -->
+<section id="afterinstall">
+  <div class="section-label">// post-install setup</div>
+  <h2 class="section-title">What to Do <span style="color:var(--accent)">After Installing</span></h2>
+  <p class="section-desc">Your Arch system boots — now what? Here is everything to install and set up so your machine is actually usable, comfortable, and ready for daily life.</p>
+
+  <!-- STEP 0: First commands -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">⚡</span>
+      <div>
+        <h3>First Thing — Update Everything</h3>
+        <p>Always do a full system update before installing anything else.</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Full update right after first boot</span>
+<span class="cmd">sudo pacman -Syu</span>
+
+<span class="comment"># If yay is installed, use this instead (updates AUR too)</span>
+<span class="cmd">yay -Syu</span></pre>
+    </div>
+  </div>
+
+  <!-- FONTS -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">🔤</span>
+      <div>
+        <h3>Fonts</h3>
+        <p>Arch ships with almost no fonts. Install these or your apps and browser will look broken.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">noto-fonts</div>
+        <div class="pkg-desc">Google Noto fonts — covers almost every language and script</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">noto-fonts-emoji</div>
+        <div class="pkg-desc">Emoji support — without this, emojis show as boxes</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">ttf-liberation</div>
+        <div class="pkg-desc">Free replacements for Arial, Times New Roman, Courier</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">ttf-jetbrains-mono-nerd <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Beautiful coding font with icons — great for terminals</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Install essential fonts</span>
+<span class="cmd">sudo pacman -S</span> noto-fonts noto-fonts-emoji \
+               ttf-liberation ttf-dejavu
+
+<span class="comment"># Nerd Fonts (for terminal icons)</span>
+<span class="cmd">yay -S</span> ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols</pre>
+    </div>
+  </div>
+
+  <!-- TERMINALS & SHELL -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">🖥️</span>
+      <div>
+        <h3>Terminal &amp; Shell</h3>
+        <p>Make your terminal fast and pleasant to use. Zsh with plugins is highly recommended.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">zsh</div>
+        <div class="pkg-desc">Better shell than bash — tab completion, themes, plugins</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">oh-my-zsh <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Framework for managing zsh config, themes, and plugins</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">starship <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Fast, pretty terminal prompt that works in any shell</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">kitty</div>
+        <div class="pkg-desc">GPU-accelerated terminal — fast, supports images in terminal</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">alacritty</div>
+        <div class="pkg-desc">Minimal, fast terminal — very popular in the Arch community</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">zsh-autosuggestions</div>
+        <div class="pkg-desc">Suggests commands as you type based on your history</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Install zsh and set it as your default shell</span>
+<span class="cmd">sudo pacman -S</span> zsh zsh-autosuggestions zsh-syntax-highlighting
+<span class="cmd">chsh -s</span> $(which zsh)
+
+<span class="comment"># Install oh-my-zsh (run this as your normal user)</span>
+<span class="cmd">sh -c</span> "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+<span class="comment"># Install starship prompt</span>
+<span class="cmd">yay -S</span> starship
+<span class="comment"># Add this to the end of ~/.zshrc or ~/.bashrc:</span>
+<span class="comment"># eval "$(starship init zsh)"</span></pre>
+    </div>
+  </div>
+
+  <!-- TEXT EDITORS / IDE -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">✏️</span>
+      <div>
+        <h3>Text Editors &amp; IDEs</h3>
+        <p>Pick at least one good editor. VS Code is the most beginner-friendly. Neovim is for those who want full control.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">code <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">VS Code — most popular editor, huge extension library</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">neovim</div>
+        <div class="pkg-desc">Powerful modal editor — steep learning curve, very fast</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">nano</div>
+        <div class="pkg-desc">Simple terminal editor — good for quick config edits</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">gedit</div>
+        <div class="pkg-desc">Simple GUI text editor — good for GNOME users</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># VS Code (open source build)</span>
+<span class="cmd">yay -S</span> visual-studio-code-bin
+
+<span class="comment"># Neovim</span>
+<span class="cmd">sudo pacman -S</span> neovim
+
+<span class="comment"># Nano (usually already installed)</span>
+<span class="cmd">sudo pacman -S</span> nano</pre>
+    </div>
+  </div>
+
+  <!-- MEDIA -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">🎵</span>
+      <div>
+        <h3>Media — Music, Video &amp; Images</h3>
+        <p>Play videos, music, and view images out of the box.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">vlc</div>
+        <div class="pkg-desc">Best video player — plays almost any format without codecs</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">mpv</div>
+        <div class="pkg-desc">Minimal, fast video player — great for Hyprland/tiling setups</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">spotify <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Official Spotify client for Linux</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">feh</div>
+        <div class="pkg-desc">Lightweight image viewer — also used for setting wallpapers</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">eog</div>
+        <div class="pkg-desc">Eye of GNOME — simple image viewer with slideshow support</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">cmus</div>
+        <div class="pkg-desc">Fast terminal music player — keyboard-driven</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Video players</span>
+<span class="cmd">sudo pacman -S</span> vlc mpv
+
+<span class="comment"># Music</span>
+<span class="cmd">yay -S</span> spotify
+
+<span class="comment"># Image viewers</span>
+<span class="cmd">sudo pacman -S</span> feh eog
+
+<span class="comment"># Extra media codecs (for rare formats)</span>
+<span class="cmd">sudo pacman -S</span> ffmpeg gst-plugins-good gst-plugins-bad</pre>
+    </div>
+  </div>
+
+  <!-- FILE MANAGEMENT -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">📁</span>
+      <div>
+        <h3>File Management</h3>
+        <p>Browse, manage, and archive your files comfortably.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">thunar</div>
+        <div class="pkg-desc">Fast, clean file manager — works great in any WM</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">nautilus</div>
+        <div class="pkg-desc">GNOME Files — feature-rich, polished UI</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">dolphin</div>
+        <div class="pkg-desc">KDE file manager — very powerful, tabbed, split view</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">ranger</div>
+        <div class="pkg-desc">Terminal file manager — keyboard driven, Vim-like</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">unzip / unrar</div>
+        <div class="pkg-desc">Extract ZIP and RAR archives from the terminal</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">p7zip</div>
+        <div class="pkg-desc">Support for 7z archives and many other formats</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># GUI file managers (pick one)</span>
+<span class="cmd">sudo pacman -S</span> thunar        <span class="comment"># lightweight</span>
+<span class="cmd">sudo pacman -S</span> nautilus      <span class="comment"># GNOME</span>
+<span class="cmd">sudo pacman -S</span> dolphin       <span class="comment"># KDE</span>
+
+<span class="comment"># Terminal file manager</span>
+<span class="cmd">sudo pacman -S</span> ranger
+
+<span class="comment"># Archive tools</span>
+<span class="cmd">sudo pacman -S</span> unzip unrar p7zip zip</pre>
+    </div>
+  </div>
+
+  <!-- COMMUNICATION -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">💬</span>
+      <div>
+        <h3>Communication &amp; Social</h3>
+        <p>Stay connected — chat, video calls, and email.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">discord <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Voice, video, and text chat — official Linux build</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">telegram-desktop</div>
+        <div class="pkg-desc">Fast, secure messaging app — official Linux client</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">thunderbird</div>
+        <div class="pkg-desc">Full-featured email client from Mozilla</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">zoom <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Video conferencing — official Zoom client for Linux</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Discord</span>
+<span class="cmd">yay -S</span> discord
+
+<span class="comment"># Telegram</span>
+<span class="cmd">sudo pacman -S</span> telegram-desktop
+
+<span class="comment"># Email</span>
+<span class="cmd">sudo pacman -S</span> thunderbird
+
+<span class="comment"># Zoom</span>
+<span class="cmd">yay -S</span> zoom</pre>
+    </div>
+  </div>
+
+  <!-- PRODUCTIVITY -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">📝</span>
+      <div>
+        <h3>Productivity &amp; Office</h3>
+        <p>Documents, spreadsheets, PDF viewers, and note-taking.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">libreoffice-fresh</div>
+        <div class="pkg-desc">Full office suite — Writer, Calc, Impress. Opens .docx/.xlsx</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">okular</div>
+        <div class="pkg-desc">Excellent PDF and document viewer from KDE</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">zathura</div>
+        <div class="pkg-desc">Minimal keyboard-driven PDF viewer — great for tiling WMs</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">obsidian <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Powerful markdown note-taking app with graph view</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Office suite</span>
+<span class="cmd">sudo pacman -S</span> libreoffice-fresh
+
+<span class="comment"># PDF viewers</span>
+<span class="cmd">sudo pacman -S</span> okular
+<span class="cmd">sudo pacman -S</span> zathura zathura-pdf-mupdf
+
+<span class="comment"># Notes</span>
+<span class="cmd">yay -S</span> obsidian</pre>
+    </div>
+  </div>
+
+  <!-- DEVELOPMENT -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">⚙️</span>
+      <div>
+        <h3>Development Tools</h3>
+        <p>For coding, scripting, and building software on your system.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">git</div>
+        <div class="pkg-desc">Version control — essential for any developer</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">python</div>
+        <div class="pkg-desc">Python 3 runtime — needed by many apps and scripts</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">nodejs / npm</div>
+        <div class="pkg-desc">JavaScript runtime — needed for web development</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">docker</div>
+        <div class="pkg-desc">Run apps in containers — great for development environments</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">github-cli <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Manage GitHub repos, PRs, and issues from the terminal</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">htop / btop</div>
+        <div class="pkg-desc">See what is using your CPU and RAM — better than Task Manager</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Core dev tools</span>
+<span class="cmd">sudo pacman -S</span> git python python-pip nodejs npm
+
+<span class="comment"># Docker</span>
+<span class="cmd">sudo pacman -S</span> docker
+<span class="cmd">sudo systemctl enable</span> --now docker
+<span class="cmd">sudo usermod -aG docker</span> $USER
+
+<span class="comment"># GitHub CLI</span>
+<span class="cmd">yay -S</span> github-cli
+
+<span class="comment"># System monitors</span>
+<span class="cmd">sudo pacman -S</span> htop btop</pre>
+    </div>
+  </div>
+
+  <!-- GAMING -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">🎮</span>
+      <div>
+        <h3>Gaming</h3>
+        <p>Arch Linux is surprisingly good for gaming. Steam works natively and Proton lets you play most Windows games.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">steam</div>
+        <div class="pkg-desc">Official Steam client — enable Proton in settings to play Windows games</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">lutris <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">Game manager for GOG, Epic, Humble, and emulators</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">lib32-mesa / nvidia libs</div>
+        <div class="pkg-desc">32-bit graphics drivers needed for most Steam games</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">gamemode</div>
+        <div class="pkg-desc">Optimises system performance while a game is running</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Enable multilib repo first (for 32-bit support)</span>
+<span class="comment"># Edit /etc/pacman.conf and uncomment:</span>
+<span class="comment"># [multilib]</span>
+<span class="comment"># Include = /etc/pacman.d/mirrorlist</span>
+<span class="cmd">sudo pacman -Syu</span>  <span class="comment"># refresh after enabling</span>
+
+<span class="comment"># Steam + 32-bit Mesa (AMD/Intel GPU)</span>
+<span class="cmd">sudo pacman -S</span> steam lib32-mesa lib32-vulkan-radeon
+
+<span class="comment"># Steam + NVIDIA GPU</span>
+<span class="cmd">sudo pacman -S</span> steam lib32-nvidia-utils
+
+<span class="comment"># Game performance booster</span>
+<span class="cmd">sudo pacman -S</span> gamemode lib32-gamemode
+
+<span class="comment"># Lutris</span>
+<span class="cmd">yay -S</span> lutris</pre>
+    </div>
+    <div class="step-note" style="margin-top:16px;">
+      <span class="step-note-icon">🕹️</span>
+      <p>In Steam: go to <strong style="color:var(--text)">Settings → Compatibility</strong> and enable <strong style="color:var(--text)">Proton</strong> for all titles. Most Windows games on Steam work on Arch this way. Check <a href="https://www.protondb.com" target="_blank" style="color:var(--accent2)">ProtonDB</a> to see if your games are supported.</p>
+    </div>
+  </div>
+
+  <!-- SYSTEM UTILITIES -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">🛠️</span>
+      <div>
+        <h3>Essential System Utilities</h3>
+        <p>Small but important tools that fill gaps in a minimal Arch install.</p>
+      </div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-name">ufw</div>
+        <div class="pkg-desc">Simple firewall — enable it and forget it</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">timeshift <span class="aur-tag">AUR</span></div>
+        <div class="pkg-desc">System snapshots — roll back if something breaks</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">neofetch</div>
+        <div class="pkg-desc">Show off your system info — a rite of passage</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">tmux</div>
+        <div class="pkg-desc">Split and manage multiple terminal sessions in one window</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">wget / curl</div>
+        <div class="pkg-desc">Download files and call APIs from the terminal</div>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-name">ripgrep / fd</div>
+        <div class="pkg-desc">Fast modern replacements for grep and find</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Firewall</span>
+<span class="cmd">sudo pacman -S</span> ufw
+<span class="cmd">sudo systemctl enable</span> --now ufw
+<span class="cmd">sudo ufw enable</span>
+
+<span class="comment"># Snapshots</span>
+<span class="cmd">yay -S</span> timeshift
+
+<span class="comment"># Terminal tools</span>
+<span class="cmd">sudo pacman -S</span> neofetch tmux wget curl \
+               ripgrep fd bat eza
+
+<span class="comment"># bat = better cat | eza = better ls</span>
+<span class="comment"># Try: bat ~/.zshrc  or  eza -la</span></pre>
+    </div>
+  </div>
+
+  <!-- BLUETOOTH -->
+  <div class="category-block">
+    <div class="category-header">
+      <span class="category-icon">📶</span>
+      <div>
+        <h3>Bluetooth &amp; Printing</h3>
+        <p>Bluetooth and printing are not enabled by default on Arch — set them up if you need them.</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="comment"># Bluetooth</span>
+<span class="cmd">sudo pacman -S</span> bluez bluez-utils blueman
+<span class="cmd">sudo systemctl enable</span> --now bluetooth
+
+<span class="comment"># Printing (CUPS)</span>
+<span class="cmd">sudo pacman -S</span> cups cups-filters system-config-printer
+<span class="cmd">sudo systemctl enable</span> --now cups
+
+<span class="comment"># Open printer GUI</span>
+<span class="cmd">system-config-printer</span></pre>
+    </div>
+  </div>
+
+</section>
+
+<hr class="divider">
+
+<!-- TIPS -->
+<section id="tips">
+  <div class="section-label">// after install</div>
+  <h2 class="section-title">Stay Safe &amp; Secure</h2>
+  <p class="section-desc">Now that Arch is running, follow these practices to keep your system fast and secure.</p>
+
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-icon">🔄</div>
+      <h4>Keep System Updated</h4>
+      <p>Run <code style="color:var(--accent)">sudo pacman -Syu</code> regularly to get security patches and the latest software.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🔥</div>
+      <h4>Enable Firewall</h4>
+      <p>Install and enable <code style="color:var(--accent)">ufw</code>. Run <code style="color:var(--accent)">sudo ufw enable</code> to block unwanted connections.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🔑</div>
+      <h4>Use Strong Passwords</h4>
+      <p>Use a unique, long password for your user and root accounts. Consider a password manager like <code style="color:var(--accent)">bitwarden</code>.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">💾</div>
+      <h4>Backup with Timeshift</h4>
+      <p>Install <code style="color:var(--accent)">timeshift</code> to take system snapshots. You can restore your system if something breaks.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">📦</div>
+      <h4>Use the AUR Carefully</h4>
+      <p>The AUR has tons of packages. Always read the PKGBUILD before installing. Use <code style="color:var(--accent)">yay</code> or <code style="color:var(--accent)">paru</code> as your AUR helper.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🛡️</div>
+      <h4>Read the Arch Wiki</h4>
+      <p>The <a href="https://wiki.archlinux.org" target="_blank" style="color:var(--accent2)">Arch Wiki</a> is the best Linux documentation in existence. Bookmark it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Made with ❤️ for the Arch Linux community.</p>
+  <p>Dotfiles by <a href="https://github.com/khiwkonlo/School-ditfiles" target="_blank">khiwkonlo</a> — Free &amp; Open Source forever.</p>
+  <p style="margin-top:8px; font-size:0.68rem; opacity:0.5;">btw, I use Arch.</p>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
